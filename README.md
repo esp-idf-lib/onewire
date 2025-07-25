@@ -1,5 +1,9 @@
 # esp-idf-lib/onewire
 
+[![Build examples](https://github.com/esp-idf-lib/onewire/actions/workflows//build.yml/badge.svg)](https://github.com/esp-idf-lib/onewire/actions/workflows//build.yml)
+[![Build docs](https://github.com/esp-idf-lib/onewire/actions/workflows//build-docs.yml/badge.svg)](https://github.com/esp-idf-lib/onewire/actions/workflows//build-docs.yml)
+[![Validation](https://github.com/esp-idf-lib/onewire/actions/workflows//validate-component.yml/badge.svg)](https://github.com/esp-idf-lib/onewire/actions/workflows//validate-component.yml)
+
 Bit-banging 1-Wire driver.
 
 * [Documentation](https://esp-idf-lib.github.io/onewire/)
@@ -11,7 +15,7 @@ Bit-banging 1-Wire driver.
 ## Installation
 
 ```sh
-idf.py add-dependency esp-idf-lib/onewire^1.0.0
+idf.py add-dependency esp-idf-lib/onewire
 ```
 
 ## Support
