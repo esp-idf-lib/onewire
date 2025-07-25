@@ -11,7 +11,7 @@ Bit-banging 1-Wire driver.
 ## Installation
 
 ```sh
-idf.py add-dependency "esp-idf-lib/onewire^1.0.0
+idf.py add-dependency esp-idf-lib/onewire^1.0.0
 ```
 
 ## Support
