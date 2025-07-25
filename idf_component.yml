@@ -24,4 +24,4 @@ issues: https://github.com/esp-idf-lib/onewire/issues
 discussion: https://github.com/esp-idf-lib/core/discussions
 files:
   exclude:
-    - docs
+    - docs/**/*
