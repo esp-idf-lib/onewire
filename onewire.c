@@ -382,7 +382,8 @@ onewire_addr_t onewire_search_next(onewire_search_t *search, gpio_num_t pin)
                     rom_byte_mask = 1;
                 }
             }
-        } while (rom_byte_number < 8);  // loop until through all ROM bytes 0-7
+        }
+        while (rom_byte_number < 8);    // loop until through all ROM bytes 0-7
 
         // if the search was successful then
         if (!(id_bit_number < 65))
@@ -424,7 +425,8 @@ onewire_addr_t onewire_search_next(onewire_search_t *search, gpio_num_t pin)
 #ifdef CONFIG_ONEWIRE_CRC8_TABLE
 // This table comes from Dallas sample code where it is freely reusable,
 // though Copyright (c) 2000 Dallas Semiconductor Corporation
-static const uint8_t dscrc_table[] = {
+static const uint8_t dscrc_table[] =
+{
     0, 94, 188, 226, 97, 63, 221, 131, 194, 156, 126, 32, 163, 253, 31, 65,
     157, 195, 33, 127, 252, 162, 64, 30, 95, 1, 227, 189, 62, 96, 130, 220,
     35, 125, 159, 193, 66, 28, 254, 160, 225, 191, 93, 3, 128, 222, 60, 98,
@@ -495,8 +497,8 @@ uint8_t onewire_crc8(const uint8_t *data, uint8_t len)
 //    ReadBytes(net, buf+3, 10);  // Read 6 data bytes, 2 0xFF, 2 CRC16
 //    if (!CheckCRC16(buf, 11, &buf[11])) {
 //        // Handle error.
-//    }     
-//          
+//    }
+//
 // @param input - Array of bytes to checksum.
 // @param len - How many bytes to use.
 // @param inverted_crc - The two CRC16 bytes in the received data.
