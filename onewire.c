@@ -452,7 +452,7 @@ static const uint8_t dscrc_table[] =
 // compared to all those delayMicrosecond() calls.  But I got
 // confused, so I use this table from the examples.)
 //
-uint8_t onewire_crc8(const uint8_t *data, uint8_t len)
+uint8_t onewire_crc8_dallas(const uint8_t *data, uint8_t len)
 {
     uint8_t crc = 0;
 
@@ -466,7 +466,7 @@ uint8_t onewire_crc8(const uint8_t *data, uint8_t len)
 // Compute a Dallas Semiconductor 8 bit CRC directly.
 // this is much slower, but much smaller, than the lookup table.
 //
-uint8_t onewire_crc8(const uint8_t *data, uint8_t len)
+uint8_t onewire_crc8_dallas(const uint8_t *data, uint8_t len)
 {
     uint8_t crc = 0;
 

@@ -247,8 +247,29 @@ onewire_addr_t onewire_search_next(onewire_search_t *search, gpio_num_t pin);
  *
  * These are used in the ROM address and scratchpad registers to verify the
  * transmitted data is correct.
+ *
+ * @note The implementation is exported under the name `onewire_crc8_dallas`,
+ *       because espressif/onewire_bus exports `onewire_crc8` with a different
+ *       signature and two symbols with the same name cannot coexist in one
+ *       binary.
+ *
+ * @param data  Data to compute the CRC of
+ * @param len   Number of bytes
+ * @return      The CRC
  */
-uint8_t onewire_crc8(const uint8_t *data, uint8_t len);
+uint8_t onewire_crc8_dallas(const uint8_t *data, uint8_t len);
+
+/**
+ * @brief Compute a Dallas Semiconductor 8 bit CRC.
+ *
+ * @param data  Data to compute the CRC of
+ * @param len   Number of bytes
+ * @return      The CRC
+ */
+static inline uint8_t onewire_crc8(const uint8_t *data, uint8_t len)
+{
+    return onewire_crc8_dallas(data, len);
+}
 
 /**
  * @brief Compute the 1-Wire CRC16 and compare it against the received CRC.
