@@ -37,6 +37,26 @@
  * @brief Routines to access devices using the Dallas Semiconductor 1-Wire(tm)
  *        protocol.
  *
+ * The bus needs one GPIO and one pull-up resistor: every pulse is produced by
+ * the CPU, no peripheral is involved. The pin is configured as an open-drain
+ * output with the internal pull-up enabled, which is enough for a short bus
+ * with a couple of devices; the datasheets ask for an external 4.7 kOhm
+ * resistor, and it is worth adding one for longer wires, several devices or
+ * parasitic power.
+ *
+ * A device driver talks to the bus in the usual order: onewire_reset() to get
+ * the presence pulse, onewire_skip_rom() or onewire_select() to address all
+ * devices or one of them, then the command and data bytes, and finally the
+ * CRCs of this component to check what came back.
+ *
+ * The timings are busy-waits inside critical sections, so interrupts are
+ * disabled for up to about 80 us per bit. Do not call these functions from an
+ * interrupt handler.
+ *
+ * @note The component is not thread-safe: it has no lock of its own. Call it
+ *       from one task, or take your own mutex around every exchange with the
+ *       bus.
+ *
  * This is a port of a bit-banging one wire driver based on the implementation
  * from NodeMCU.
  *
@@ -87,6 +107,9 @@ typedef struct
  * @brief Perform a 1-Wire reset cycle.
  *
  * @param pin  The GPIO pin connected to the 1-Wire bus.
+ *
+ * The reset cycle also depowers the bus if onewire_power() was called before
+ * and leaves the pin in open-drain mode with the internal pull-up enabled.
  *
  * @return `true` if at least one device responds with a presence pulse,
  *         `false` if no devices were detected (or the bus is shorted, etc)
@@ -151,7 +174,8 @@ bool onewire_write_bytes(gpio_num_t pin, const uint8_t *buf, size_t count);
  *
  * @param pin    The GPIO pin connected to the 1-Wire bus.
  *
- * @return the read byte on success, negative value on error.
+ * @return the byte read, 0..255, or -1 if the bus could not be released by the
+ *         devices (a shorted or a stuck bus)
  */
 int onewire_read(gpio_num_t pin);
 
@@ -191,9 +215,14 @@ bool onewire_read_bytes(gpio_num_t pin, uint8_t *buf, size_t count);
  *       while something else is pulling it low (which could cause a reset or
  *       damage the ESP32/ESP8266).
  *
+ * While the bus is powered the pin is a push-pull output, not an open-drain
+ * one, so the line is held high by the GPIO itself. ::onewire_depower() and
+ * ::onewire_reset() return the pin to open-drain mode.
+ *
  * @param pin    The GPIO pin connected to the 1-Wire bus.
  *
- * @return `true` on success, `false` on error.
+ * @return `true` on success, `false` if the line stayed low, in which case
+ *         nothing was driven
  */
 bool onewire_power(gpio_num_t pin);
 
@@ -221,8 +250,13 @@ void onewire_search_start(onewire_search_t *search);
  * @brief Setup the search to search for devices with the specified
  *        "family code".
  *
+ * Call this instead of ::onewire_search_start() when only one kind of device
+ * is of interest: the enumeration then returns the members of that family and
+ * nothing else.
+ *
  * @param[out] search       The onewire_search_t structure to update.
- * @param family_code   The "family code" to search for.
+ * @param family_code   The "family code" to search for, the least significant
+ *                      byte of the ROM code (for example, 0x28 for a DS18B20).
  */
 void onewire_search_prefix(onewire_search_t *search, uint8_t family_code);
 
@@ -232,8 +266,21 @@ void onewire_search_prefix(onewire_search_t *search, uint8_t family_code);
  * The order of returned device addresses is deterministic. You will always
  * get the same devices in the same order.
  *
+ * @par Example
+ * @code{.c}
+ *     onewire_search_t search;
+ *     onewire_addr_t addr;
+ *
+ *     onewire_search_start(&search);
+ *     while ((addr = onewire_search_next(&search, pin)) != ONEWIRE_NONE)
+ *     {
+ *         // use the device
+ *     }
+ * @endcode
+ *
  * @note It might be a good idea to check the CRC to make sure you didn't get
- *       garbage.
+ *       garbage: on a noisy bus the search returns codes that no device has.
+ *       onewire_crc8() over the eight bytes of the address answers that.
  *
  * @return the address of the next device on the bus, or ::ONEWIRE_NONE if
  *         there is no next address. ::ONEWIRE_NONE might also mean that
